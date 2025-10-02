@@ -1,4 +1,4 @@
-# %% [markdown]
+# %% [markdown] editable=false
 # # Urban Sound Classification using Deep Learning
 #
 # ## 1. Project Overview
@@ -34,7 +34,7 @@
 # Dataset compiled by Justin Salamon, Christopher Jacoby and Juan Pablo Bello. All files are excerpts of recordings
 # uploaded to www.freesound.org. Please see FREESOUNDCREDITS.txt in the repository for an attribution list.
 
-# %%
+# %% editable=false
 import os
 import numpy as np
 import pandas as pd
@@ -57,7 +57,7 @@ import keras_tuner as kt
 np.random.seed(42)
 tf.random.set_seed(42)
 
-# %%
+# %% editable=false
 # Dataset path
 DATASET_PATH = "UrbanSound8K"
 METADATA_FILE = os.path.join(DATASET_PATH, "metadata", "UrbanSound8K.csv")
@@ -67,7 +67,7 @@ metadata = pd.read_csv(METADATA_FILE)
 print("Dataset loaded successfully!")
 print("Dataset shape:", metadata.shape)
 
-# %% [markdown]
+# %% [markdown] editable=false
 # ## 4. Dataset Description
 # **Data Size**:
 # - Total sound files: 8,732 excerpts
@@ -77,7 +77,7 @@ print("Dataset shape:", metadata.shape)
 #
 # The sampling rate, bit depth, and number of channels are the same as those of the original file uploaded to Freesound (and hence may vary from file to file).
 
-# %%
+# %% editable=false
 # Display basic dataset information
 print("Total number of audio files:", len(metadata))
 print("Number of unique classes:", metadata['class'].nunique())
@@ -89,10 +89,10 @@ display(metadata.head())
 # Display dataset columns
 print("Dataset columns:", metadata.columns.tolist())
 
-# %% [markdown]
+# %% [markdown] editable=false
 # ## 5. EXPLORATORY DATA ANALYSIS (EDA)
 
-# %%
+# %% editable=false
 # 5.1 Label Distribution Analysis
 plt.figure(figsize=(15, 10))
 
@@ -143,7 +143,7 @@ plt.grid(True, alpha=.3)
 
 plt.show()
 
-# %% [markdown]
+# %% [markdown] editable=false
 # ### 5.1 Observations
 #
 # Most classes seem to have around 1000 samples a few with a significantly lower number of samples. Even then, this does not warrant resampling as the overall distribution is mostly balanced.
@@ -152,7 +152,7 @@ plt.show()
 #
 # It is also interesting to note that except for car horns and gun shots, all clips have a median of around 4.0. Gun shots have a median way below. While it is not used here, I suspect that including the duration as a feature/parameter while training would improve the scores of these two classes.
 
-# %%
+# %% editable=false
 # 5.2 Audio Characteristics Analysis
 
 # Analyze a few sample files to demonstrate audio properties
@@ -171,7 +171,7 @@ for _, row in metadata.sample(20, random_state=42).iterrows():
 
 pd.DataFrame(sample_analysis).style.set_caption("Audio characteristics")
 
-# %%
+# %% editable=false
 # 5.3 Visualize Sample Audio Files
 def plot_sample_audios(metadata, n_samples=3):
     """Plot waveform and spectrogram for sample audio files"""
@@ -208,7 +208,7 @@ def plot_sample_audios(metadata, n_samples=3):
 # Plot sample audio analysis
 plot_sample_audios(metadata, n_samples=3)
 
-# %%
+# %% editable=false
 # 5.4 Duration Analysis
 durations = metadata['end'] - metadata['start']
 plt.figure(figsize=(12, 4))
@@ -233,12 +233,12 @@ print("Std: %.2fs" % durations.std())
 print("Min: %.2fs" % durations.min())
 print("Max: %.2fs" % durations.max())
 
-# %% [markdown]
+# %% [markdown] editable=false
 # ### 5.4 Observations
 #
 # As seen above, the data is extremely skewed. The tail to the left, while very weak, should be kept in mind when performing operations on the data, especially feature extraction.
 
-# %% [markdown]
+# %% [markdown] editable=false
 # ## 6. Data Preprocessing
 # **Preprocessing Steps**:
 # 1. **Feature Extraction**: MFCC (Mel-Frequency Cepstral Coefficients) with delta and delta-delta features
@@ -258,7 +258,7 @@ print("Max: %.2fs" % durations.max())
 # - Standard scaling ensures stable training of neural networks
 # - Fixed fold assignment ensures reproducible evaluation
 
-# %%
+# %% editable=false
 # Define fixed folds for model selection
 VAL_FOLD = 9
 TEST_FOLD = 10
@@ -269,7 +269,7 @@ print("Training folds:", TRAIN_FOLDS)
 print("Validation fold:", VAL_FOLD)
 print("Test fold:", TEST_FOLD)
 
-# %%
+# %% editable=false
 # Precompute features for all data once
 def precompute_all_features(metadata):
     all_features = []
@@ -307,7 +307,7 @@ def precompute_all_features(metadata):
 all_features, all_features_sequential, all_labels, all_folds = precompute_all_features(metadata)
 print("Precomputed features shape:", all_features.shape)
 
-# %%
+# %% editable=false
 # Split data using precomputed features
 train_mask = np.isin(all_folds, TRAIN_FOLDS)
 val_mask = all_folds == VAL_FOLD
@@ -332,7 +332,7 @@ print("\nTraining:", pd.Series(y_train).value_counts().sort_index(), sep='\n')
 print("\nValidation:", pd.Series(y_val).value_counts().sort_index(), sep='\n')
 print("\nTest:", pd.Series(y_test).value_counts().sort_index(), sep='\n')
 
-# %%
+# %% editable=false
 # Encode labels
 label_encoder = LabelEncoder()
 y_train_encoded = label_encoder.fit_transform(y_train)
@@ -343,7 +343,7 @@ print("Class mapping:")
 for i, class_name in enumerate(label_encoder.classes_):
     print("%s: %d" % (class_name, i))
 
-# %%
+# %% editable=false
 # Scale features
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
@@ -377,7 +377,7 @@ X_train_reshaped = X_train_scaled.reshape(X_train_scaled.shape[0], X_train_scale
 X_val_reshaped = X_val_scaled.reshape(X_val_scaled.shape[0], X_val_scaled.shape[1], 1)
 X_test_reshaped = X_test_scaled.reshape(X_test_scaled.shape[0], X_test_scaled.shape[1], 1)
 
-# %% [markdown]
+# %% [markdown] editable=false
 # ## 7. Model Selection and Architecture
 #
 # ### Choice of Models:
@@ -402,7 +402,7 @@ X_test_reshaped = X_test_scaled.reshape(X_test_scaled.shape[0], X_test_scaled.sh
 #
 # During training and hyperparameter tuning, the validation fold is used to evaluate the performance of the model and whether it has overfit. But when choosing the best model, the separate test fold is used instead, as the early stopping used during the hyperparameter tuning and subsequent training might have led to a data leak from the validation dataset.
 
-# %%
+# %% editable=false
 def build_mlp_model(hp):
     """Build MLP model with tunable hyperparameters"""
     input_dim = X_train_scaled.shape[1]
@@ -496,7 +496,7 @@ def build_lstm_model(hp):
     model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     return model
 
-# %%
+# %% editable=false
 def run_model_specific_tuning(model_type, max_trials=15):
     """Run hyperparameter tuning for a specific model type"""
 
@@ -538,13 +538,13 @@ def run_model_specific_tuning(model_type, max_trials=15):
 
     return { 'model': best_model, 'hyperparameters': best_hps, 'tuner': tuner, 'val_acc': best_model.evaluate(X_val_tune, y_val_encoded, verbose=0)[1] }
 
-# %%
+# %% editable=false
 # Run separate hyperparameter tuning for each model type
 tuning_results = {
     model_type: run_model_specific_tuning(model_type, max_trials=30) for model_type in ('lstm', 'mlp', 'cnn', )
 }
 
-# %%
+# %% editable=false
 for model_type, results in tuning_results.items():
     print("\nBest %s hyperparameters:" % model_type.upper())
     print("="*50)
@@ -552,14 +552,14 @@ for model_type, results in tuning_results.items():
         print("%s: %s" % param_value_pair)
     print("Best %s validation accuracy: %.4f" % (model_type.upper(), results["val_acc"]))
 
-# %% [markdown]
+# %% [markdown] editable=false
 # ## 8. Results and Analysis
 #
 # From the hyperparameter tuning results above, we see that the LSTM model is a clear winner. However, the three models will be retrained so that we have access to their training histories, and then they will be compared using the test fold (instead of the validation fold used till now).
 #
 # Test-accuracy will be the main metric. In addition, precision, recall, and f1-score will be calculated along with the display of a correlation matrix.
 
-# %%
+# %% editable=false
 # Train and compare the best models from each architecture type
 model_histories = {}
 trained_models = {}
@@ -599,7 +599,7 @@ for model_type, results in tuning_results.items():
     val_accuracy = model.evaluate(val_data, y_val_encoded, verbose=0)[1]
     print("Best %s validation accuracy: %.4f" % (model_type.upper(), val_accuracy))
 
-# %%
+# %% editable=false
 # Compare training histories across model types
 plt.figure(figsize=(15, 10))
 
@@ -646,7 +646,7 @@ plt.grid(True, alpha=.3)
 plt.tight_layout()
 plt.show()
 
-# %%
+# %% editable=false
 # Final evaluation on test set for all best model types
 print("=== FINAL EVALUATION ON TEST SET (FOLD 10) - ALL MODEL TYPES ===")
 
@@ -676,7 +676,7 @@ for model_type, model in trained_models.items():
     print(classification_report(y_test_encoded, y_pred_classes,
                               target_names=label_encoder.classes_))
 
-# %%
+# %% editable=false
 # Comparative performance analysis
 comparison_data = []
 for model_type, results in test_results.items():
@@ -702,7 +702,7 @@ comparison_df = comparison_df.sort_values('Test Accuracy', ascending=False)
 print("Performance Comparison Across Model Types:")
 display(comparison_df)
 
-# %%
+# %% editable=false
 # Visual comparison of model performances
 plt.figure(figsize=(15, 5))
 
@@ -751,7 +751,7 @@ for bar, params in zip(bars, param_values):
 plt.tight_layout()
 plt.show()
 
-# %%
+# %% editable=false
 # Select the best overall model based on test performance
 best_overall_type = comparison_df.iloc[0]['Model Type'].lower()
 best_overall_model = trained_models[best_overall_type]
@@ -768,7 +768,7 @@ final_history = model_histories[best_overall_type]
 best_hps = tuning_results[best_overall_type]['hyperparameters']
 
 
-# %%
+# %% editable=false
 # 10-Fold Cross-Validation with Detailed Metrics and Confusion Matrix
 def run_comprehensive_cross_validation(all_features, all_features_sequential, all_labels, all_folds, best_hps, n_folds=10):
     """Comprehensive cross-validation with confusion matrix aggregation"""
@@ -887,7 +887,7 @@ cv_accuracies, cv_true_labels, cv_predicted_labels = run_comprehensive_cross_val
     all_features, all_features_sequential, all_labels, all_folds, best_hps
 )
 
-# %%
+# %% editable=false
 # Create overall confusion matrix for 10-fold cross-validation
 
 # Convert back to original class names
@@ -911,7 +911,7 @@ plt.yticks(rotation=0)
 plt.tight_layout()
 plt.show()
 
-# %%
+# %% editable=false
 # Normalized confusion matrix (by true labels)
 cv_cm_normalized = cv_cm.astype('float') / cv_cm.sum(axis=1)[:, np.newaxis]
 
@@ -929,7 +929,7 @@ plt.yticks(rotation=0)
 plt.tight_layout()
 plt.show()
 
-# %%
+# %% editable=false
 # Per-class performance analysis from cross-validation
 cv_class_report = classification_report(cv_true_labels_names, cv_predicted_labels_names, target_names=label_encoder.classes_, output_dict=True)
 cv_class_report_df = pd.DataFrame(cv_class_report).transpose()
@@ -937,7 +937,7 @@ cv_class_report_df = pd.DataFrame(cv_class_report).transpose()
 print("Classification Report (10-Fold CV):")
 print(classification_report(cv_true_labels_names, cv_predicted_labels_names, target_names=label_encoder.classes_))
 
-# %%
+# %% editable=false
 # Compare single test fold vs cross-validation performance
 
 # Single fold confusion matrix (from previous evaluation)
@@ -965,7 +965,7 @@ axes[1].tick_params(axis='y', rotation=0)
 plt.tight_layout()
 plt.show()
 
-# %%
+# %% editable=false
 # Detailed analysis of cross-validation results
 
 # Calculate per-class accuracy from confusion matrix
@@ -997,7 +997,7 @@ print("\nMost Challenging Classes:")
 for _, row in worst_classes.iterrows():
     print("\t%s: %.4f" % (row['Class'], row['Class_Accuracy']))
 
-# %%
+# %% editable=false
 # Visualize class-wise performance
 plt.figure(figsize=(15, 5))
 x = range(len(label_encoder.classes_))
@@ -1041,7 +1041,7 @@ plt.grid(True, alpha=.3, axis='y')
 plt.tight_layout()
 plt.show()
 
-# %%
+# %% editable=false
 # Hyperparameter Tuning Analysis
 print("Best Model Type:", best_overall_type)
 print("Best Model Configuration:")
@@ -1059,7 +1059,7 @@ tuner_df = pd.DataFrame(tuner_data)
 print("\nTop 3 Hyperparameter Configurations from each model type:")
 display(tuner_df.sort_values('score', ascending=False).head(10))
 
-# %%
+# %% editable=false
 # Final Summary Table
 pd.DataFrame({
     'Evaluation Method': ['Single Test Fold (Fold 10)', '10-Fold Cross-Validation'],
@@ -1068,7 +1068,7 @@ pd.DataFrame({
     'Learning Rate': [best_hps['learning_rate'], best_hps['learning_rate']]
 }).style.set_caption("Final performance summary")
 
-# %% [markdown]
+# %% [markdown] editable=false
 # ## 9. Discussion and Conclusion
 #
 # ### Quick re-iteration
@@ -1106,4 +1106,4 @@ pd.DataFrame({
 # - Try using val_accuracy instead of val_loss for early stopping.
 # - LSTM is definitely better but it overfits rather quickly. Try using dropout not only as separate layers, but within the LSTM layer itself (note that this will cause a great spike in the GPU training time).
 
-# %%
+# %% editable=false
